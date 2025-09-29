@@ -1,0 +1,10 @@
+yield:
+  class: File
+  location: data/iowa_yield.csv
+geojson:
+  class: File
+  location: data/iowa_counties.geojson
+soil:
+  class: File
+  location: data/soil_data.csv
+
