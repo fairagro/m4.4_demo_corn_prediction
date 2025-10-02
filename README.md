@@ -27,7 +27,12 @@ Verify installation:
 ```bash
 s4n -V
 ```
-
+To create Tools based of the Python scripts in the code Directory a virtual environment needs to be created using
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install  pandas==2.3.2 geopandas==1.1.1 shapely==2.1.1 scikit-learn==1.7.2  joblib==1.5.2 matplotlib==3.10.6 requests==2.32.5
+```
 ---
 
 ## 🛠️ Step 1: Initialize Project
@@ -157,20 +162,10 @@ s4n create -c Dockerfile --container-tag pyplot --enable-network \
 
 ## ⚙ Step 3: Build the Workflow
 
-Now we’ll build the workflow in three clear phases: **create**, **connect**, and **save**.
-
-### ✅ Phase 1: Create the Workflow
-
-Start by creating a new workflow named `demo`:
-
-```bash
-s4n create -n demo
-```
-
-This generates a new directory `workflows/demo/` with a `demo.cwl` file.
+Now we’ll build the workflow in two clear phases: **connect**, and **save**
 
 
-### 🔗 Phase 2: Connect Inputs and Outputs
+### 🔗 Phase 1: Connect Inputs and Outputs
 
 Now connect the tools in the correct order. Use `s4n list -a` to inspect available inputs and outputs.
 
@@ -181,6 +176,7 @@ s4n connect demo --from @inputs/soil --to get_soil/soil_cache
 s4n connect demo --from @inputs/geojson --to get_weather/geojson
 s4n connect demo --from @inputs/geojson --to merge_features/geojson
 s4n connect demo --from @inputs/yield --to train_model/yield
+s4n connect demo --from @inputs/geojson --to plot_yields/geojson
 ```
 
 #### 🔹 Connect Intermediate Steps
@@ -196,11 +192,10 @@ s4n connect demo --from predict_yields/county_predictions --to plot_yields/predi
 
 #### 🔹 Connect Final Output
 ```bash
-s4n connect demo --from @inputs/geojson --to plot_yields/geojson
 s4n connect demo --from plot_yields/iowa_county_yields --to @outputs/iowa_county_yields
 ```
 
-### ✅ Phase 3: Save the Workflow
+### ✅ Phase 2: Save the Workflow
 
 Once all connections are made, save the workflow to ensure it’s committed to version control:
 
