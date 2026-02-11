@@ -1,10 +1,20 @@
 s4n init
+
+# Option 1: use Dockerfile 
 s4n create -c Dockerfile --container-tag pyplot --enable-network python code/get_soil.py --geojson data/iowa_counties.geojson --soil_cache data/soil_data.csv
 s4n create -c Dockerfile --container-tag pyplot --enable-network python code/get_weather.py --geojson data/iowa_counties.geojson 
 s4n create -c Dockerfile --container-tag pyplot --enable-network python code/merge_features.py  --geojson data/iowa_counties.geojson --weather weather.csv --soil soil.csv
 s4n create -c Dockerfile --container-tag pyplot --enable-network python code/train_model.py --features county_features.csv --yield data/iowa_yield.csv
 s4n create -c Dockerfile --container-tag pyplot --enable-network python code/predict_yields.py --features county_features.csv --model model.pkl --scaler scaler.pkl
 s4n create -c Dockerfile --container-tag pyplot --enable-network python code/plot_yields.py --predictions county_predictions.csv --geojson data/iowa_counties.geojson 
+
+# Option 2: use existing Docker image
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/get_soil.py --geojson data/iowa_counties.geojson --soil_cache data/soil_data.csv
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/get_weather.py --geojson data/iowa_counties.geojson 
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/merge_features.py  --geojson data/iowa_counties.geojson --weather weather.csv --soil soil.csv
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/train_model.py --features county_features.csv --yield data/iowa_yield.csv
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/predict_yields.py --features county_features.csv --model model.pkl --scaler scaler.pkl
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/plot_yields.py --predictions county_predictions.csv --geojson data/iowa_counties.geojson 
 
 s4n create -n demo
 s4n connect demo --from @inputs/geojson --to get_soil/geojson
@@ -26,3 +36,4 @@ s4n save demo
 s4n execute make-template workflows/demo/demo.cwl > inputs.yml
 s4n execute local workflows/demo/demo.cwl inputs.yml
 s4n execute remote start workflows/demo/demo.cwl inputs.yml
+
