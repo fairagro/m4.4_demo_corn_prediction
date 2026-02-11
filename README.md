@@ -51,8 +51,10 @@ For each script in the `code/` directory, we create a CWL `CommandLineTool` usin
 
 > 📌 **Note**: Most soil data has already been downloaded because downloading them takes time.
 
-The first step is to get soil data from soilgrids for the Iowa counties coordinates.
+> 📌 **Note**: There are two different options for creating the tool. Either use the Dockerfile in this repository, but then you need to ensure that Docker is running for the remote and local execution. Alternatively, you can use an image from Docker Hub. In the this case, it is not necessary to have Docker running for remote execution.
 
+The first step is to get soil data from soilgrids for the Iowa counties coordinates.
+#### Option 1: Dockerfile
 ```bash
 s4n create -c Dockerfile --container-tag pyplot --enable-network \
   python code/get_soil.py --geojson data/iowa_counties.geojson --soil_cache data/soil_data.csv
@@ -105,23 +107,85 @@ baseCommand:
 - code/get_soil.py
 
 ```
+#### Option 2: existing Docker image 
+```bash
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
+  python code/get_soil.py --geojson data/iowa_counties.geojson --soil_cache data/soil_data.csv
+```
+This creates ` file `get_soil.cwl`:
+```cwl
+#!/usr/bin/env cwl-runner
 
+cwlVersion: v1.2
+class: CommandLineTool
+
+requirements:
+- class: InitialWorkDirRequirement
+  listing:
+  - entryname: code/get_soil.py
+    entry:
+      $include: ../../code/get_soil.py
+- class: DockerRequirement
+  dockerPull: user12398/corn_demo:v1.0.0
+- class: NetworkAccess
+  networkAccess: true
+
+inputs:
+- id: geojson
+  type: File
+  default:
+    class: File
+    location: ../../data/iowa_counties.geojson
+  inputBinding:
+    prefix: --geojson
+- id: soil_cache
+  type: File
+  default:
+    class: File
+    location: ../../data/soil_data.csv
+  inputBinding:
+    prefix: --soil_cache
+
+outputs:
+- id: soil
+  type: File
+  outputBinding:
+    glob: soil.csv
+
+baseCommand:
+- python
+- code/get_soil.py
+
+```
 ### 🔹 2. Get Weather Data
 
 Next, we fetch weather data for each county, for the year that was used for prediction.
 
+#### Option 1: Dockerfile
 ```bash
 s4n create -c Dockerfile --container-tag pyplot --enable-network \
   python code/get_weather.py --geojson data/iowa_counties.geojson
 ```
-
+#### Option 2: existing Docker image 
+```bash
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
+  python code/get_weather.py --geojson data/iowa_counties.geojson
+```
 
 ### 🔹 3. Merge Features
 
 Now we combine soil and weather data into a single feature set.
 
+#### Option 1: Dockerfile
 ```bash
 s4n create -c Dockerfile --container-tag pyplot --enable-network \
+  python code/merge_features.py --geojson data/iowa_counties.geojson \
+                                --weather weather.csv \
+                                --soil soil.csv
+```
+#### Option 2: existing Docker image 
+```bash
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
   python code/merge_features.py --geojson data/iowa_counties.geojson \
                                 --weather weather.csv \
                                 --soil soil.csv
@@ -130,19 +194,31 @@ s4n create -c Dockerfile --container-tag pyplot --enable-network \
 ### 🔹 4. Train Yield Prediction Model
 
 We train a simple model using historical yield data.
-
+#### Option 1: Dockerfile
 ```bash
 s4n create -c Dockerfile --container-tag pyplot --enable-network \
   python code/train_model.py --features county_features.csv \
                              --yield data/iowa_yield.csv
 ```
-
+#### Option 2: existing Docker image 
+```bash
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
+  python code/train_model.py --features county_features.csv \
+                             --yield data/iowa_yield.csv
+```
 ### 🔹 5. Predict Yields
 
 Now we use the trained model to predict yields for each county.
-
+#### Option 1: Dockerfile
 ```bash
 s4n create -c Dockerfile --container-tag pyplot --enable-network \
+  python code/predict_yields.py --features county_features.csv \
+                                --model model.pkl \
+                                --scaler scaler.pkl
+```
+#### Option 2: existing Docker image 
+```bash
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
   python code/predict_yields.py --features county_features.csv \
                                 --model model.pkl \
                                 --scaler scaler.pkl
@@ -151,13 +227,18 @@ s4n create -c Dockerfile --container-tag pyplot --enable-network \
 ### 🔹 6. Plot Predictions
 
 Finally, we visualize the predictions on a map.
-
+#### Option 1: Dockerfile
 ```bash
 s4n create -c Dockerfile --container-tag pyplot --enable-network \
   python code/plot_yields.py --predictions county_predictions.csv \
                              --geojson data/iowa_counties.geojson
 ```
-
+#### Option 2: existing Docker image 
+```bash
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
+  python code/plot_yields.py --predictions county_predictions.csv \
+                             --geojson data/iowa_counties.geojson
+```
 ---
 
 ## ⚙ Step 3: Build the Workflow
@@ -240,12 +321,14 @@ yield:
 ```
 
 ### 🔹 Run the Full Pipeline
+> ⚠️ **Important Note**: Docker should be running to execute the workflow locally.
 ```bash
 s4n execute local workflows/demo/demo.cwl inputs.yml
 ```
 
 
 ### 🔹 Run Remotely (Optional)
+> ⚠️ **Important Note**: If you used the local Dockerfile (Option 1), Docker should be running to execute the workflow remotely, because the Docker image will be created locally and published at ttl.sh for an hour. If the existing Docker image, it is not necessary that Docker is running.
 ```bash
 s4n execute remote start workflows/demo/demo.cwl inputs.yml
 ```
