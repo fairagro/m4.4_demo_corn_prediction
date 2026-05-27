@@ -18,10 +18,20 @@ It is **not intended for real-world agricultural analysis** or decision-making. 
 
 Install the latest version of `s4n`:
 
+### Linux/MacOS:
 ```bash
-curl --proto '=https' --tlsv1.2 -LsSf https://fairagro.github.io/m4.4_sciwin_client/get_s4n.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://fairagro.github.io/sciwin/get_s4n.sh | sh 
+```
+If `curl` responds with code 429 you can try to use `wget` instead. 
+```bash
+wget -qO- https://fairagro.github.io/sciwin/get_s4n.sh | sh 
 ```
 
+
+### Windows:
+```powershell
+powershell -ExecutionPolicy Bypass -c "irm https://fairagro.github.io/sciwin/get_s4n.ps1 | iex"
+```
 Verify installation:
 
 ```bash
