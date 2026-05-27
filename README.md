@@ -37,18 +37,37 @@ Verify installation:
 ```bash
 s4n -V
 ```
-To create Tools based of the Python scripts in the code Directory a virtual environment needs to be created using
+
+---
+
+## 🛠️ Step 1: Initialize Project
+
+First, the project is set up and initalized. 
+```bash
+git clone https://github.com/fairagro/m4.4_demo_corn_prediction
+cd m4.4_demo_corn_prediction
+```
+
+Then initialise the project using :
+```bash
+s4n init
+```
+
+To create tools based of the python scripts in the code directory a virtual environment needs to be created using
+
+### Linux/MacOS:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install  pandas==2.3.2 geopandas==1.1.1 shapely==2.1.1 scikit-learn==1.7.2  joblib==1.5.2 matplotlib==3.10.6 requests==2.32.5
 ```
----
-
-## 🛠️ Step 1: Initialize Project
+### Windows:
 
 ```bash
-s4n init
+python -m venv .venv  
+call .venv\Scripts\activate.bat
+pip install  pandas==2.3.2 geopandas==1.1.1 shapely==2.1.1 scikit-learn==1.7.2  joblib==1.5.2 matplotlib==3.10.6 requests==2.32.5
 ```
 
 ---
@@ -66,8 +85,7 @@ For each script in the `code/` directory, we create a CWL `CommandLineTool` usin
 The first step is to get soil data from soilgrids for the Iowa counties coordinates.
 #### Option 1: Dockerfile
 ```bash
-s4n create -c Dockerfile --container-tag pyplot --enable-network \
-  python code/get_soil.py --geojson data/iowa_counties.geojson --soil_cache data/soil_data.csv
+s4n create -c Dockerfile --container-tag pyplot --enable-network python code/get_soil.py --geojson data/iowa_counties.geojson --soil_cache data/soil_data.csv
 ```
 This creates a new directory `workflows/get_soil` with a CWL `CommandLineTool` file `get_soil.cwl`:
 
@@ -119,8 +137,7 @@ baseCommand:
 ```
 #### Option 2: existing Docker image 
 ```bash
-s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
-  python code/get_soil.py --geojson data/iowa_counties.geojson --soil_cache data/soil_data.csv
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/get_soil.py --geojson data/iowa_counties.geojson --soil_cache data/soil_data.csv
 ```
 This creates ` file `get_soil.cwl`:
 ```cwl
@@ -173,13 +190,11 @@ Next, we fetch weather data for each county, for the year that was used for pred
 
 #### Option 1: Dockerfile
 ```bash
-s4n create -c Dockerfile --container-tag pyplot --enable-network \
-  python code/get_weather.py --geojson data/iowa_counties.geojson
+s4n create -c Dockerfile --container-tag pyplot --enable-network python code/get_weather.py --geojson data/iowa_counties.geojson
 ```
 #### Option 2: existing Docker image 
 ```bash
-s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
-  python code/get_weather.py --geojson data/iowa_counties.geojson
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/get_weather.py --geojson data/iowa_counties.geojson
 ```
 
 ### 🔹 3. Merge Features
@@ -188,17 +203,11 @@ Now we combine soil and weather data into a single feature set.
 
 #### Option 1: Dockerfile
 ```bash
-s4n create -c Dockerfile --container-tag pyplot --enable-network \
-  python code/merge_features.py --geojson data/iowa_counties.geojson \
-                                --weather weather.csv \
-                                --soil soil.csv
+s4n create -c Dockerfile --container-tag pyplot --enable-network python code/merge_features.py --geojson data/iowa_counties.geojson --weather weather.csv  --soil soil.csv
 ```
 #### Option 2: existing Docker image 
 ```bash
-s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
-  python code/merge_features.py --geojson data/iowa_counties.geojson \
-                                --weather weather.csv \
-                                --soil soil.csv
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/merge_features.py --geojson data/iowa_counties.geojson --weather weather.csv --soil soil.csv
 ```
 
 ### 🔹 4. Train Yield Prediction Model
@@ -206,32 +215,22 @@ s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
 We train a simple model using historical yield data.
 #### Option 1: Dockerfile
 ```bash
-s4n create -c Dockerfile --container-tag pyplot --enable-network \
-  python code/train_model.py --features county_features.csv \
-                             --yield data/iowa_yield.csv
+s4n create -c Dockerfile --container-tag pyplot --enable-network python code/train_model.py --features county_features.csv --yield data/iowa_yield.csv
 ```
 #### Option 2: existing Docker image 
 ```bash
-s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
-  python code/train_model.py --features county_features.csv \
-                             --yield data/iowa_yield.csv
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/train_model.py --features county_features.csv --yield data/iowa_yield.csv
 ```
 ### 🔹 5. Predict Yields
 
 Now we use the trained model to predict yields for each county.
 #### Option 1: Dockerfile
 ```bash
-s4n create -c Dockerfile --container-tag pyplot --enable-network \
-  python code/predict_yields.py --features county_features.csv \
-                                --model model.pkl \
-                                --scaler scaler.pkl
+s4n create -c Dockerfile --container-tag pyplot --enable-network python code/predict_yields.py --features county_features.csv --model model.pkl --scaler scaler.pkl
 ```
 #### Option 2: existing Docker image 
 ```bash
-s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
-  python code/predict_yields.py --features county_features.csv \
-                                --model model.pkl \
-                                --scaler scaler.pkl
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/predict_yields.py --features county_features.csv  --model model.pkl --scaler scaler.pkl
 ```
 
 ### 🔹 6. Plot Predictions
@@ -239,15 +238,11 @@ s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
 Finally, we visualize the predictions on a map.
 #### Option 1: Dockerfile
 ```bash
-s4n create -c Dockerfile --container-tag pyplot --enable-network \
-  python code/plot_yields.py --predictions county_predictions.csv \
-                             --geojson data/iowa_counties.geojson
+s4n create -c Dockerfile --container-tag pyplot --enable-network python code/plot_yields.py --predictions county_predictions.csv --geojson data/iowa_counties.geojson
 ```
 #### Option 2: existing Docker image 
 ```bash
-s4n create -c user12398/corn_demo:v1.0.0 --enable-network \
-  python code/plot_yields.py --predictions county_predictions.csv \
-                             --geojson data/iowa_counties.geojson
+s4n create -c user12398/corn_demo:v1.0.0 --enable-network python code/plot_yields.py --predictions county_predictions.csv --geojson data/iowa_counties.geojson
 ```
 ---
 
