@@ -341,3 +341,10 @@ s4n execute remote start workflows/demo/demo.cwl inputs.yml
 ## 📚 Learn More
 
 - 📖 [SciWIn Client Documentation](https://fairagro.github.io/m4.4_sciwin_client)
+
+
+## Acknowledgements
+ 
+This work was created as part of the NFDI consortium FAIRagro (www.fairagro.net). We gratefully acknowledge the financial support of the German Research Foundation (DFG) – project number 501899475.
+ 
+<img src="https://fairagro.net/assets/Fairagro_Logo_lb_ohLiRand_weiss.svg" alt="FAIRagro Logo" style="width:300px;" />
